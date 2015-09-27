@@ -1,2 +1,2 @@
 # mtuliod
-MTulio Deamon - Client-Server application
+MTulio Deamon - An study case of Client-Server application
