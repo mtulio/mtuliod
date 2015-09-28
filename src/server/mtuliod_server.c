@@ -1,23 +1,16 @@
-/* Server and connection Mgr 
- * Create a server - bind on port
- * Manage threads
- * Check msgs from client
- * Send to Pars message*/
-
-
 /*
-    C socket server example, handles multiple clients using threads
-    Compile
-    gcc server.c -lpthread -o server
-*/
+ * MTulio Server socket. handles multiple clients using threads.
+ */
 
 #include<stdio.h>
-#include<string.h>    //strlen
-#include<stdlib.h>    //strlen
+#include<string.h>
+#include<stdlib.h>
 #include<sys/socket.h>
 #include<arpa/inet.h> //inet_addr
 #include<unistd.h>    //write
 #include<pthread.h> //for threading , link with lpthread
+
+#include <mtuliod.h>
 
 /* GLOBALS */
 int countConn;
@@ -46,7 +39,7 @@ int mtd_srv_init(struct sockaddr_in *server, int *socket_desc)
     server->sin_addr.s_addr = INADDR_ANY;
     server->sin_port = htons( 8888 );
 
-    printf(" Starting Server on address %x:%x ... ",
+    printf(" # Starting Server on address %x:%x ... ",
     		ntohl(server->sin_addr.s_addr), ntohs(server->sin_port) );
     fflush(stdout);
 
@@ -55,7 +48,7 @@ int mtd_srv_init(struct sockaddr_in *server, int *socket_desc)
     if( ret<0 )
     {
         //print the error message
-        perror(" [FAIL] Bind failed. Error");
+        perror(" # [FAIL] Bind failed. Error");
         return ret;
     }
 
@@ -202,5 +195,30 @@ int mtd_srv_main(void)
 
 int main(int argc , char *argv[])
 {
+	int ret;
+
+	/* Server config file */
+	mtd_srv_cfg_t mtd_config;
+
+	/* Init envs */
+	//memset(mtd_config, 0, strlen(mtd_config));
+	memset(mtd_config.config_file, 0, strlen(mtd_config.config_file));
+	//memset(mtd_config.log_file, 0, strlen(mtd_config.log_file));
+
+
+	sprintf(mtd_config.config_file, "conf/mtuliod.conf");
+	//sprintf(mtd_config.log_file, "mtuliod.log");
+	mtd_config.test = 0;
+
+	//printf("%s\n", __FUNCTION__);
+
+	/* Load configuration file  */
+	ret = mtd_srv_config_main(&mtd_config);
+	if (ret != 0) {
+		printf("# Error opening config file\n");
+		exit(ret);
+	}
+
+	/* Start TCP server */
 	mtd_srv_main();
 }

@@ -8,7 +8,7 @@
 int mtd_server_cmd_run_HOSTNAME(char *msg_cmd, char *message);
 
 
-/* Get hostname */
+/* CMD: Get hostname */
 int mtd_server_cmd_run_HOSTNAME(char *msg_cmd, char *message)
 {
 	FILE *fd;

@@ -2,12 +2,13 @@
 # Description: MTulio Deamon
 # Dependencies: None
 
-CFLAGS += -I.
+CFLAGS := -I.
+CFLAGS := -I../include
 CFLAGS += -lm
 
 OBJECTS := mtdLib_strings.o
 
-all: build_lib_strings build_app_testLib
+all: build_lib_strings 
 #all: build_lib_strings 
 
 ########### Building Libs
