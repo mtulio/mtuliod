@@ -5,20 +5,17 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
+
 #include<sys/socket.h>
-#include<arpa/inet.h> //inet_addr
-#include<unistd.h>    //write
-#include<pthread.h> //for threading , link with lpthread
+#include<arpa/inet.h>
+#include<unistd.h>
+
+#include<pthread.h>
 
 #include <mtuliod.h>
 
 /* GLOBALS */
 int countConn;
-/*typedef struct {
-	int socket_fd;
-	struct sockaddr_in socket_addr;
-	unsigned int clientId;
-} mtd_srv_client_t;*/
 
 void *mtd_srv_connection_handler(void *);
 
