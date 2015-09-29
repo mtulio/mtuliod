@@ -30,8 +30,15 @@ using namespace std;
 int main(void)
 {
 	MTsh mtsh ("mtulio.conf");
+	char *line_read;
 
-	cout<<"line: "<<mtsh.mtsh_readline()<<endl;
+	//TODO: Init vectors, lists and commands structs
+
+	/* Main loop command. */
+	while ((line_read = mtsh.mtsh_readline()) != NULL)
+		mtsh.mtsh_exec(line_read);
+
+	printf ("\n");
 
 	exit(0);
 }

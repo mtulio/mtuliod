@@ -34,3 +34,10 @@ char *MTsh::mtsh_readline(void)
 
     return (line);
 }
+
+/* Exec a command parsing it. */
+void *MTsh::mtsh_exec(char *line)
+{
+	std::cout<<"line: "<<line<<std::endl;
+    return 0;
+}

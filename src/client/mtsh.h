@@ -21,6 +21,7 @@ class MTsh
 
 		//std::string *mtsh_readline(void);
 		char *mtsh_readline(void);
+		void *mtsh_exec(char *line);
 
 };
 //char * mtsh_readline();
