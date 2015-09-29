@@ -10,6 +10,10 @@
 
 #include<string>
 
+/* Defuns */
+#define	CMD_STR_VERSION		"version"
+
+/* Class MTsh */
 class MTsh
 {
 	private :
@@ -21,7 +25,9 @@ class MTsh
 
 		//std::string *mtsh_readline(void);
 		char *mtsh_readline(void);
-		void *mtsh_exec(char *line);
+		int mtsh_exec(char *line);
+		int mtsh_strSplitLine(char *line, std::string str_cmd, std::string str_arg);
+		int mtsh_execFunc(std::string str_cmd, std::string str_arg);
 
 };
 //char * mtsh_readline();
