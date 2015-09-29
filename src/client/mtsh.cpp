@@ -15,10 +15,11 @@
 #include <cstdio>
 
 /* Project libs */
+#include <mtsh.h>
 #include <mtuliosh.h>
 
 /* Read a string, and return a pointer to it.  Returns NULL on EOF. */
-char * mtsh_readline(void)
+char *MTsh::mtsh_readline(void)
 {
     static char *line = NULL;
     if (line) {

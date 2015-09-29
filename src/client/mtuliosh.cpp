@@ -29,8 +29,9 @@ using namespace std;
  */
 int main(void)
 {
+	MTsh mtsh ("mtulio.conf");
 
-	cout<<"line: "<<mtsh_readline()<<endl;
+	cout<<"line: "<<mtsh.mtsh_readline()<<endl;
 
 	exit(0);
 }

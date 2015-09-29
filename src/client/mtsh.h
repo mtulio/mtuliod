@@ -8,8 +8,22 @@
 #ifndef SRC_CLIENT_MTSH_H_
 #define SRC_CLIENT_MTSH_H_
 
+#include<string>
 
-char * mtsh_readline();
+class MTsh
+{
+	private :
+		std::string config_file;
+
+	public :
+		MTsh(std::string config_file) { this->config_file=config_file; };
+		~MTsh(){};
+
+		//std::string *mtsh_readline(void);
+		char *mtsh_readline(void);
+
+};
+//char * mtsh_readline();
 
 
 #endif /* SRC_CLIENT_MTSH_H_ */
