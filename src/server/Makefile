@@ -32,8 +32,6 @@ mtd_server_cmd_run: mtd_server_cmd_run.c
 mtd_server_config: mtd_server_config.c
 	gcc -w ${CFLAGS} -c mtd_server_config.c -o mtd_server_config.o
 
-
-
 # Main Daemon
 mtuliod:
 	#gcc ${CFLAGS} -w mtdLib_test.c -o mtdLib_test ${OBJECTS}
