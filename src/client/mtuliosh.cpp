@@ -31,15 +31,24 @@ int main(void)
 {
 	MTsh mtsh ("mtulio.conf");
 	char *line_read;
+	int ret = 1;
 
 	//TODO: Init vectors, lists and commands structs
 
 	/* Main loop command. */
-	while ((line_read = mtsh.mtsh_readline()) != NULL)
-		mtsh.mtsh_exec(line_read);
+//	while ( ((line_read = mtsh.mtsh_readline()) != NULL) && (ret != 0) ) {
+//		ret = mtsh.mtsh_exec(line_read);
+//	}
 
-	printf ("\n");
+	do {
+		line_read = mtsh.mtsh_readline();
+		ret = mtsh.mtsh_exec(line_read);
 
-	exit(0);
+	} while ((ret != 0));
+
+
+	//printf ("\n");
+
+	exit(ret);
 }
 

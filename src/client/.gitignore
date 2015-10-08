@@ -1,4 +1,7 @@
 
 # Ignore projects
-quagga-0.99.20.1/
+external/
 opensource_packs/
+
+# Binaries
+mtuliosh
