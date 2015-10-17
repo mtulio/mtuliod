@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_BUFF_SIZE 2000
+#include <mtuliod.h>
+#include <mtd_server_cmd.h>
 
-int mtd_srv_cmd_parseMessage(char *message/*, char *message_out*/);
-int mtd_srv_cmd_strTrim (char *message, char *msgBuff);
-
-/*  Parse message */
+/*
+* Parse message sent by socket
+* @param char message with message sent by socket (all line)
+* @see mtd_srv_connection_handler()
+* @return a int with status of operation, 0 success and 99 exit (quit message)
+*/
 int mtd_srv_cmd_parseMessage(char *message/*, char *message_out*/)
 {
 	char msg_cmd[strlen(message)];
@@ -45,14 +48,22 @@ int mtd_srv_cmd_parseMessage(char *message/*, char *message_out*/)
 
 
 /*  Trim string - remove \n */
-int mtd_srv_cmd_strTrim (char *message, char *msgBuff)
+/*
+* Trim a message sent by client (removing end of line delimited).
+* @param char message is a string with original message from client
+* @param char msgBuff is a string without \n delimiter
+* @see mtd_srv_cmd_parseMessage()
+* @return none
+*/
+void mtd_srv_cmd_strTrim (char *message, char *msgBuff)
 {
 
 	memset(msgBuff, '\0', strlen(msgBuff));
-	//strcpy(msgBuff, message);
-//	printf("\nF1[%s]: message(%s)", __FUNCTION__, message);
+	/*strcpy(msgBuff, message);
+	printf("\nF1[%s]: message(%s)", __FUNCTION__, message);*/
+
 	for (int pos=0; pos<=strlen(message); pos++) {
-//		printf("F[%s] char[%p]", __FUNCTION__, message[pos]);
+		/*printf("F[%s] char[%p]", __FUNCTION__, message[pos]);*/
 		msgBuff[pos]=message[pos];
 		if (message[pos]==0xd) {
 			msgBuff[pos]='\0';
@@ -60,11 +71,10 @@ int mtd_srv_cmd_strTrim (char *message, char *msgBuff)
 		}
 	}
 
-//	strncpy(message, msgBuff, strlen(msgBuff));
-//	fflush(stdout);
-//	printf("\nF2[%s]: msgBuff(%s) message(%s) ", __FUNCTION__, msgBuff, message);
-//	fflush(stdout);
+	/*strncpy(message, msgBuff, strlen(msgBuff));
+	fflush(stdout);
+	printf("\nF2[%s]: msgBuff(%s) message(%s) ", __FUNCTION__, msgBuff, message);
+	fflush(stdout);*/
 
 	return;
 }
-

@@ -5,10 +5,17 @@
 #define PFIX_CLI "[MTd]"
 #define MAX_BUF_SIZE 200
 
-int mtd_server_cmd_run_HOSTNAME(char *msg_cmd, char *message);
-
+#include <mtuliod.h>
+#include <mtd_server_cmd_run.h>
 
 /* CMD: Get hostname */
+/*
+* Run a HOSTNAME command to get a System hostname.
+* @param char msg_cmd with message command
+* @param char message is a message to be returned to socket client
+* @see mtd_srv_cmd_parseMessage()
+* @return a int with status of operation, 0 success
+*/
 int mtd_server_cmd_run_HOSTNAME(char *msg_cmd, char *message)
 {
 	FILE *fd;

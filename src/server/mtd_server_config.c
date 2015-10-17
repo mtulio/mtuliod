@@ -5,15 +5,14 @@
 #include <errno.h>
 
 #include <mtuliod.h>
+#include <mtd_server_config.h>
 
-/* Function to be defined on .h */
-int mtd_srv_config_main(mtd_srv_cfg_t *mtd_config);
-int mtd_srv_config_readData(mtd_srv_cfg_t *mtd_config);
-
-/* Mainc server config file
- * - Check file exist
- * - Parse config file to struct
- */
+/*
+* Read main server config file and return it to struct.
+* @param mtd_config is a struct with server configuration file
+* @see main()
+* @return a int with status of operation
+*/
 int mtd_srv_config_main(mtd_srv_cfg_t *mtd_config)
 {
 	FILE *fd_config;
@@ -25,7 +24,6 @@ int mtd_srv_config_main(mtd_srv_cfg_t *mtd_config)
 		if (fd_config)
 				fclose(fd_config);
 	} else {
-		//perror("Cannot open config file. Error ");
 		printf(" %% Unable to find config file [%s]\n", mtd_config->config_file);
 		return EXIT_ERR;
 	}
@@ -41,10 +39,10 @@ int mtd_srv_config_main(mtd_srv_cfg_t *mtd_config)
 	return RET_OK;
 }
 
-/**
+/*
 * Function to read data from config file.
 * @param mtd_config is a struct with server configuration file
-* @see
+* @see mtd_srv_config_main()
 * @return a int with status of operation
 */
 int mtd_srv_config_readData(mtd_srv_cfg_t *mtd_config)
@@ -96,14 +94,7 @@ int mtd_srv_config_readData(mtd_srv_cfg_t *mtd_config)
 		printf(" [config_file] unable to open file: %s ", mtd_config->config_file);
 	}
 
-
 	//printf("ret[%d]", mtd_srv_config_file_load (mtd_config));
-
 	return RET_OK;
 }
 
-/**/
-/*int mtdLib_strings_lineIsEmpy(char *line)
-{
-
-}*/
