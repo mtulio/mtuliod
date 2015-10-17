@@ -112,6 +112,7 @@ int mtdLib_str_getStrlenByDelPos(char *array_in, char delimiter, int posDel)
  * str_A : left string from delimiter
  * str_B : right string from delimiter
  */
+/* TODO: check strtok function to avoid above*/
 int mtdLib_strings_splitByDelimiter (char *str_buff, char *delimiter, char *str_A, char *str_B)
 {
 	char str_tmp[MAX_BUFF_SIZE];

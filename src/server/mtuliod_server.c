@@ -222,28 +222,33 @@ int main(int argc , char *argv[])
 	int ret;
 
 	/* Server config file */
-	mtd_srv_cfg_t mtd_config;
+	//mtd_srv_cfg_t *mtd_config;
 
 	/* Init envs */
-	//memset(mtd_config, 0, strlen(mtd_config));
-	memset(mtd_config.config_file, 0, strlen(mtd_config.config_file));
-	//memset(mtd_config.log_file, 0, strlen(mtd_config.log_file));
-
+	if (!mtd_config) {
+		mtd_config = (mtd_srv_cfg_t *)malloc(sizeof(mtd_srv_cfg_t));
+		memset (mtd_config, 0, sizeof(mtd_srv_cfg_t));
+	}
 
 	/* Might to be read from command line */
-	sprintf(mtd_config.config_file, "conf/mtuliod.conf");
+	//sprintf(mtd_config.config_file, "conf/mtuliod.conf");
+	sprintf(mtd_config->config_file, "conf/mtuliod.conf");
 	//sprintf(mtd_config.log_file, "mtuliod.log");
-	mtd_config.test = 0;
-
-	//printf("%s\n", __FUNCTION__);
+	mtd_config->test = 0;
 
 	/* Load configuration file  */
-	ret = mtd_srv_config_main(&mtd_config);
+	ret = mtd_srv_config_main(mtd_config);
 	if (ret != 0) {
 		printf("# Error opening config file\n");
 		exit(ret);
 	}
 
 	/* Start TCP server */
-	mtd_srv_main(&mtd_config);
+	mtd_srv_main(mtd_config);
+
+	/* Free structure */
+	if (mtd_config)
+		free (mtd_config);
+
+	exit (0);
 }

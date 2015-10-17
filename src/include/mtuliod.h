@@ -19,6 +19,8 @@ typedef struct {
 	int test;
 } mtd_srv_cfg_t;
 
+mtd_srv_cfg_t *mtd_config;
+
 /* Available commands */
 typedef enum {
 	cmd_help,

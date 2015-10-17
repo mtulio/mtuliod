@@ -108,11 +108,11 @@ int mtd_server_cmd_run_SETPASS(char *msg_line, char *msg_out)
     mtd_lib_strings_trimLine (argv[3]);
 
 	/* TODO: validate SECRET with config file */
-    /*if (strcmp(argv[1], mtd_config->secret) != 0) {
+    if (strcmp(argv[1], mtd_config->secret) != 0) {
 		sprintf(msg_out, "%s_%s ERR%% cmd [SETPASS]: Wrong SECRET [%s]. See HELP\n",
 				PFIX_CLI, argv[0], argv[1]);
 		return 5;
-    }*/
+    }
 
 	/* Create a command */
 	sprintf(str_cmd, "echo '%s' |passwd --stdin %s >/dev/null 2>&1; echo $?;", argv[3], argv[2]);
