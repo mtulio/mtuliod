@@ -86,6 +86,11 @@ int mtd_srv_config_readData(mtd_srv_cfg_t *mtd_config)
 					mtd_config->max_pool_conn = atoi(str_attr); //strcpy(mtd_config->max_pool_conn, str_value);
 					printf(" '-> MAX_POOL_CONN \t = [%d] \n", mtd_config->max_pool_conn);
 				}
+				else if (strncmp(str_attr, "SECRET", strlen("SECRET")) == 0) { // SECRET
+					mtd_config->max_pool_conn = atoi(str_attr); //strcpy(mtd_config->max_pool_conn, str_value);
+					strcpy(mtd_config->secret, str_value);
+					printf(" '-> SECRET \t\t = [%s] \n", mtd_config->secret);
+				}
 			}
 		}
 

@@ -34,7 +34,7 @@ mtd_server_config: mtd_server_config.c
 
 # Main Daemon
 mtuliod:
-	#gcc ${CFLAGS} -w mtdLib_test.c -o mtdLib_test ${OBJECTS}
+## gcc ${CFLAGS} -w mtdLib_test.c -o mtdLib_test ${OBJECTS}
 	gcc ${CFLAGS} -w -o mtuliod ${OBJECTS}
 
 clean: 

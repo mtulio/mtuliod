@@ -83,6 +83,7 @@ void *mtd_srv_connection_handler(void *socket_data)
     int socket = *(int*)socket_data;
     int read_size = 0;
     int terminate_client = 0;
+    int nb = 0;
 
     char *message , client_message[MAX_BUFF_SIZE];
 
@@ -99,10 +100,13 @@ void *mtd_srv_connection_handler(void *socket_data)
     //Receive a message from client
     do
     {
-		if ((read_size = recv(socket , client_message , MAX_BUFF_SIZE , 0)) > 0) {
+    	read_size = recv(socket , client_message , MAX_BUFF_SIZE , 0);
+		if ((read_size) > 0) {
+
+			printf(" # [HandlerID: %x] Receive message: %s", socket, client_message);
 
 			/* Parse each message sent by clients - each <ENTER> from telnet */
-    		if (mtd_srv_cmd_parseMessage(client_message/*, message_out*/) == 99 ){ // loop 'til QUIT
+    		if (mtd_srv_cmd_parseMessage(client_message) == 99 ) { // loop 'til QUIT
     			printf(" # [HandlerID: %x] Closing connection by command QUIT\n", socket);
 				fflush(stdout);
 				terminate_client=1;
@@ -110,13 +114,16 @@ void *mtd_srv_connection_handler(void *socket_data)
     		}
 
     		//Send the message back to client
-            write(socket, client_message , strlen(client_message));
+            nb = write(socket, client_message , strlen(client_message));
+            printf(" # [HandlerID: %x] Answer message was sent with success. Bytes=[%d]\n", socket, nb);
 
     		//clear the message buffer
     		memset(client_message, 0, MAX_BUFF_SIZE);
 
     	    message = "[MTd]$ ";
-    	    write(socket , message , strlen(message));
+    	    nb = write(socket , message , strlen(message));
+
+    	    printf(" # [HandlerID: %x] Console message was sent with success, waiting new cmds. Bytes=[%d]\n", socket, nb);
     	}
     	else {
     		puts(" %% Term received");

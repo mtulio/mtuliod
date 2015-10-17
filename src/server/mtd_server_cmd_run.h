@@ -8,6 +8,7 @@
 #ifndef SRC_SERVER_MTD_SERVER_CMD_RUN_H_
 #define SRC_SERVER_MTD_SERVER_CMD_RUN_H_
 
-int mtd_server_cmd_run_HOSTNAME(char *msg_cmd, char *message);
+int mtd_server_cmd_run_HOSTNAME(char *msg_cmd, char *msg_out);
+int mtd_server_cmd_run_SETPASS(char *msg_cmd, char *msg_out);
 
 #endif /* SRC_SERVER_MTD_SERVER_CMD_RUN_H_ */

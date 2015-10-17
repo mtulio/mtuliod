@@ -134,6 +134,7 @@ int MTsh::mtsh_execFunc(std::string str_cmd, std::string str_arg)
 		std::cout<<" ## Command FOUND: ["<<str_cmd<<"]"<<std::endl;
 
 		std::cout<<" ## ** MTsh HELP Menu ** "<<std::endl<<std::endl;
+		std::cout<<" ##\t[exit|quit] \t : Exit this program"<<std::endll;
 
 	} else {
 		std::cout<<"#% Command NOT FOUND: ["<<str_cmd<<"] not found"<<std::endl;
