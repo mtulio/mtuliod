@@ -32,10 +32,13 @@ int countConn;
 */
 int mtd_srv_init(mtd_srv_cfg_t *mtd_config, struct sockaddr_in *server, int *socket_desc)
 {
-    int ret = -99;
+    int ret = -1;
+	int enable_sock_reuse;
+
     char str[MAX_BUFF_SIZE], str_log[MAX_BUFF_SIZE];
 
-    //Create socket
+    /* Create a INTERNET STREAM socket. 0 for socket() chose
+     * right proto to use based on SOCK_STREAM type */
     *socket_desc = socket(AF_INET , SOCK_STREAM , 0);
     if (*socket_desc == -1)
     {
@@ -43,15 +46,25 @@ int mtd_srv_init(mtd_srv_cfg_t *mtd_config, struct sockaddr_in *server, int *soc
     	return RET_ERR;
     }
 
-    /* Creating sockaddr_in structure - check data from config file */
+    /* Option to enable socket reuse immediately when it be a TIME_WAIT conn,
+     * preventing message 'Address already in use' */
+    enable_sock_reuse = 1;
+
+    /* Creating sockaddr_in structure */
+
+    /* Socket family: (AF_INET) INTERNET*/
     server->sin_family = AF_INET;
 
+    /* Configure IP addr to bind */
     //TODO: bind on IP defined on config file
     server->sin_addr.s_addr = INADDR_ANY;
-    //server->sin_addr.s_addr = INADDR_LOOPBACK;
+    /*server->sin_addr.s_addr = INADDR_LOOPBACK;*/ // Loopback IP
 
-    //server->sin_port = htons( 8888 );
+    /* Port to be listen by server */
     server->sin_port = htons( atoi(mtd_config->bind_port) );
+
+    /* Writing zero the rest of the structure */
+    memset ( server->sin_zero, '\0', 8);
 
     /* Starting server/binf */
     mtd_lib_strings_showIp(ntohl(server->sin_addr.s_addr), str);
@@ -59,7 +72,7 @@ int mtd_srv_init(mtd_srv_cfg_t *mtd_config, struct sockaddr_in *server, int *soc
     sprintf(str_log, " # Starting Server on address %s:%d ... ", str, ntohs(server->sin_port) );
 	mtd_stdout_print(str_log);
 
-    // Bind
+    // Associate socket to an PORT
     ret = bind(*socket_desc,(struct sockaddr *)server , sizeof(*server) );
     if( ret<0 )
     {
@@ -69,8 +82,19 @@ int mtd_srv_init(mtd_srv_cfg_t *mtd_config, struct sockaddr_in *server, int *soc
         return ret;
     }
 
-    // Listen
-    return listen(*socket_desc , 3);
+    /* Avoid message "socket already in use"
+     * Allowing to reuse socket, set socket option: SO_REUSEADDR */
+    if (setsockopt (*socket_desc,
+    		SOL_SOCKET,
+			SO_REUSEADDR,
+			&enable_sock_reuse,
+			sizeof(int)) !=0 )
+    	perror(" #% Error setting reuse of socket: ");
+
+    /* Listen on PORT defined on descriptor of socket.
+     * Second argument is a number of conections that will be stay on the queue,
+     * waiting for the accept() */
+    return listen(*socket_desc , 5);
 }
 
 /*
@@ -180,9 +204,11 @@ void *mtd_srv_connection_handler(void *socket_data)
 int mtd_srv_main(mtd_srv_cfg_t *mtd_config)
 {
     char str_log[MAX_BUFF_SIZE];
-	int socket_desc , client_sock , len;
+    int socket_desc , client_sock , len;
     struct sockaddr_in server , client;
     pthread_t thread_id;
+
+    uint32_t in_addr;
 
     //mtd_srv_client_t mtd_srv_client;
 
@@ -194,22 +220,30 @@ int mtd_srv_main(mtd_srv_cfg_t *mtd_config)
 	    //printf (" [Success] \n");
 		mtd_stdout_print(" [Success] \n");
 	} else {
-		//fflush(stdout);
 		//printf(" %% Error starting server \n");
 		mtd_stdout_print(" %% Error starting server \n");
 		exit(1);
 	}
 
-	// Client
+	/* Server accept incoming connections from clients */
 
-    //Accept and incoming connection
-    //puts(" # Waiting for incoming connections...");
-    mtd_stdout_print(" # Waiting for incoming connections...\n");
-
+	mtd_stdout_print(" # Waiting for incoming connections...\n");
+	/* 'socket_desc' is a client connection file descriptor
+	 * 'client' is a information of client connection
+	 * 'len' is a size of connection struct (client)
+	*/
 	while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&len)) )
     {
         countConn++;
-    	sprintf(str_log, " # Receiving connection [%d] ... ", countConn);
+    	in_addr = ntohl(client.sin_addr.s_addr);
+
+        //sprintf(str_log, " # Receiving connection [%d] ... ", countConn);
+    	sprintf(str_log, " # Receiving connection [%d] from IP[%d.%d.%d.%d] ... ",
+    			countConn,
+				(in_addr >> 24) & 0xFF,
+				(in_addr >> 16) & 0xFF,
+				(in_addr >> 8) & 0xFF,
+				in_addr & 0xFF);
 		mtd_stdout_print(str_log);
 
         if( pthread_create( &thread_id , NULL , mtd_srv_connection_handler , (void*)&client_sock) < 0)
