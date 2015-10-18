@@ -12,8 +12,8 @@ CFLAGS += -lpthread
 #OBJECTS += mtd_server_cmd.o
 #OBJECTS += mtd_server_cmd_run.o
 #OBJECTS += mtd_server_config.o
-OBJECTS := ../lib/mtdLib_strings.o
-OBJECTS += ../lib/mtdLib_file.o
+OBJECTS := ../lib/mtd_lib_strings.o
+OBJECTS += ../lib/mtd_lib_file.o
 
 SRC=$(wildcard *.c)
 
