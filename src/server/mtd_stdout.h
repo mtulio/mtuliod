@@ -8,7 +8,6 @@
 #ifndef SRC_SERVER_MTD_STDOUT_H_
 #define SRC_SERVER_MTD_STDOUT_H_
 
-
 void mtd_stdout_print(char *line);
 
 #endif /* SRC_SERVER_MTD_STDOUT_H_ */

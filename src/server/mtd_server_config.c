@@ -2,10 +2,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 
 #include <mtuliod.h>
+#include <mtd_lib.h>
+#include <mtd_stdout.h>
 #include <mtd_server_config.h>
+
 
 /*
 * Read main server config file and return it to struct.
@@ -54,12 +58,20 @@ int mtd_srv_config_main(mtd_srv_cfg_t *mtd_config)
 int mtd_srv_config_readData(mtd_srv_cfg_t *mtd_config)
 {
 	FILE *fd_config;
+	int ret = 0;
 
+	char *str_attr;
+	char *str_value;
 	char str_buff[MAX_BUFF_SIZE];
-	char str_attr[MAX_BUFF_SIZE];
-	char str_value[MAX_BUFF_SIZE];
+	//char str_attr[MAX_BUFF_SIZE];
+	//char str_value[MAX_BUFF_SIZE];
 	char str_log[MAX_BUFF_SIZE];
+
 	memset (str_buff, 0, sizeof(str_buff));
+	str_attr = (char *)malloc(sizeof(char)*MAX_CONFIG_SIZE_ATTR);
+	str_value = (char *)malloc(sizeof(char)*MAX_CONFIG_SIZE_VALUE);
+	bzero (str_attr, sizeof(str_attr));
+	bzero (str_value, sizeof(str_value));
 
 	/* Read file */
 	fd_config = fopen(mtd_config->config_file, "r");
@@ -77,10 +89,10 @@ int mtd_srv_config_readData(mtd_srv_cfg_t *mtd_config)
 			if (mtdLib_strings_lineIsComment(str_buff) == RET_OK)
 				continue;
 
-			if (mtdLib_strings_splitByToken(str_buff, "=", &str_attr, &str_value) == 0) {
+			if (mtdLib_strings_splitByToken(str_buff, "=", str_attr, str_value) == 0) {
 
-				mtd_lib_strings_trimNewLine(&str_attr);
-				mtd_lib_strings_trimNewLine(&str_value);
+				mtd_lib_strings_trimNewLine(str_attr);
+				mtd_lib_strings_trimNewLine(str_value);
 
 				if (strncmp(str_attr, "IPADDR", strlen("IPADDR")) == 0) { // IPADDR
 					strcpy(mtd_config->bind_ip4addr, str_value);
@@ -123,10 +135,19 @@ int mtd_srv_config_readData(mtd_srv_cfg_t *mtd_config)
 	} else {
 		sprintf(str_log, " #% [config_file] unable to open file: %s ", mtd_config->config_file);
 		mtd_stdout_print(str_log);
-		return RET_ERR;
+		ret = RET_ERR;
+		goto GT_FINAL;
 	}
 
 	//printf("ret[%d]", mtd_srv_config_file_load (mtd_config));
-	return RET_OK;
+	ret = RET_OK;
+
+	GT_FINAL:
+	if (str_attr)
+		free (str_attr);
+	if (str_value)
+		free (str_value);
+
+	return ret;
 }
 

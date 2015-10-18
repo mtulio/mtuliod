@@ -5,12 +5,12 @@
  *      Author: mtulio
  */
 
-#ifndef SRC_SERVER_MTULIOD_SERVER_H_
-#define SRC_SERVER_MTULIOD_SERVER_H_
+#ifndef _MTULIOD_SERVER_H_
+#define _MTULIOD_SERVER_H_
 
 int mtd_srv_init(mtd_srv_cfg_t *mtd_config, struct sockaddr_in *server, int *socket_desc);
 void *mtd_srv_connection_handler(void *socket_data);
 int mtd_srv_main(mtd_srv_cfg_t *mtd_config);
 //int main(int argc , char *argv[]);
 
-#endif /* SRC_SERVER_MTULIOD_SERVER_H_ */
+#endif /* _MTULIOD_SERVER_H_ */

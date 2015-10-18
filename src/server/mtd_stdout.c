@@ -5,6 +5,7 @@
  *      Author: mtulio
  */
 
+#include<stdio.h>
 
 #include <mtuliod.h>
 #include <mtd_stdout.h>

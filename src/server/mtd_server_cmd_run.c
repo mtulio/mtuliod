@@ -1,9 +1,13 @@
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
 
+#include <mtd_lib.h>
+
 #include <mtuliod.h>
 #include <mtd_server_cmd_run.h>
+#include <mtd_stdout.h>
 
 extern mtd_srv_cfg_t *mtd_config;
 

@@ -2,7 +2,9 @@
 #include <string.h>
 
 #include <mtuliod.h>
+#include <mtd_stdout.h>
 #include <mtd_server_cmd.h>
+#include <mtd_server_cmd_run.h>
 
 /*
 * Parse message sent by socket
