@@ -10,6 +10,7 @@
 #include <ctype.h>  /*isspace()*/
 
 #include <mtuliod.h>
+#include <mtd_lib.h>
 
 /* Function to get number of Columns by delimiter from an string */
 int mtdLib_str_getColNumbers(char *array, char delimiter)

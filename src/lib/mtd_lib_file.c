@@ -11,8 +11,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "mtdLib.h"
 #include <mtuliod.h>
+#include <mtd_lib.h>
 
 /** NOT USED
 * Function to read an string from a first line of file name (path FQDN of FS).

@@ -41,6 +41,8 @@ typedef enum {
 
 /* Max buffer size */
 #define MAX_BUFF_SIZE	200
+#define MAX_CONFIG_SIZE_ATTR	64
+#define MAX_CONFIG_SIZE_VALUE	256
 
 /* CLI */
 #define PFIX_CLI "[MTd]"
