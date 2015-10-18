@@ -5,8 +5,14 @@
  *      Author: mtulio
  */
 
+//#include <stdlib.h>
+//#include <string.h>
+
 #include <stdlib.h>
-#include <string.h>
+#include <stdio.h>
+
+#include "mtdLib.h"
+#include <mtuliod.h>
 
 /** NOT USED
 * Function to read an string from a first line of file name (path FQDN of FS).
@@ -14,12 +20,12 @@
 * @see show_boot_cmd
 * @return a char with string read from file.
 */
-void mtd_lib_str_readLineFile (char *filename, char *buff)
+/*void mtd_lib_str_readLineFile (char *filename, char *buff)
 {
 	FILE *fd_config;
 	memset(buff, 0, sizeof(buff));
 
-	/* Read file */
+	// Read file
 	fd_config = fopen(filename, "r");
 	if (fd_config) {
 		fscanf (fd_config, "%s", buff);
@@ -31,7 +37,18 @@ void mtd_lib_str_readLineFile (char *filename, char *buff)
 	}
 
 	return RET_OK;
+}*/
+
+/* Check if file exists */
+int mtd_lib_fileExist (char *filename)
+{
+	FILE *fd;
+	fd = fopen(filename, "r");
+	if (fd) {
+		fclose(fd);
+		return RET_OK;
+	}
+	else
+		return RET_ERR;
 }
-
-
 

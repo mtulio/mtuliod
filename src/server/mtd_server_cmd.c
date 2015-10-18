@@ -25,6 +25,7 @@ int mtd_srv_cmd_parseMessage(char *message/*, char *message_out*/)
 	// Check command to run
 	if ((strncmp(msg_cmd, "HELP", 4) == 0) ||
 			(strncmp(msg_cmd, "help", 4) == 0)) {
+
 		sprintf(message, "[MTd]_HELP# MTulioD HELP menu: \n"
 				"\t '-> HELP \t\t\t: Show this menu. \n"
 				"\t '-> HOSTNAME \t\t\t: Get hostname info.\n"
@@ -48,6 +49,7 @@ int mtd_srv_cmd_parseMessage(char *message/*, char *message_out*/)
 			(strncmp(msg_cmd, "setpass", 7) == 0) ) {
     	//sprintf(message, "[MTd]_%s# Command [%s] accepted.\n", msg_cmd, msg_cmd);
 
+		mtd_stdout_print(" # Running command SETPASS \n");
 		return mtd_server_cmd_run_SETPASS(msg_cmd, message);
     }
     else {

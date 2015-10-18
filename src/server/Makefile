@@ -11,6 +11,7 @@ OBJECTS += mtd_server_cmd.o
 OBJECTS += mtd_server_cmd_run.o
 OBJECTS += mtd_server_config.o
 OBJECTS += ../lib/mtdLib_strings.o
+OBJECTS += ../lib/mtdLib_file.o
 
 all: mtd_server_config mtd_server_cmd_run mtd_server_cmd mtuliod_server mtuliod
 #all: build_lib_strings 

@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <ctype.h>  /*isspace()*/
+
 #include <mtuliod.h>
 
 /* Function to get number of Columns by delimiter from an string */
@@ -124,7 +126,7 @@ int mtdLib_strings_splitByDelimiter (char *str_buff, char *delimiter, char *str_
 
 	for (pos=0, posd=0; pos<=strlen(str_buff); pos++) {
 		// check delimiter
-		if (str_buff[pos] == delimiter) {
+		if (str_buff[pos] == *delimiter) {
 			if (countd == 0) {
 				strcpy(str_A, str_tmp);
 				countd++;
@@ -156,47 +158,109 @@ int mtdLib_strings_splitByDelimiter (char *str_buff, char *delimiter, char *str_
 }
 
 
-//***************/
-static int setargs(char *args, char **argv)
- {
-    int count = 0;
+int mtdLib_strings_splitByToken (char *str_line, char *delimiter, char *str_A, char *str_B)
+{
 
-    while (isspace(*args)) ++args;
-    while (*args) {
-      if (argv) argv[count] = args;
-      while (*args && !isspace(*args)) ++args;
-      if (argv && *args) *args++ = '\0';
-      while (isspace(*args)) ++args;
-      count++;
-    }
-    return count;
- }
+	char *str1, *str2, *token, *subtoken;
+	char *saveptr1, *saveptr2;
+	int j;
 
-//char **parsedargs(char *args, int *argc, char *argv)
-void parsedargs(char *args, int *argc, char *av[])
- {
-    char **argv = NULL;
-    int    argn = 0;
+	for (j = 1, str1 = str_line; ; j++, str1 = NULL) {
+          token = strtok_r(str1, delimiter, &saveptr1);
+          if (token == NULL)
+              break;
 
-    if (args && *args
-     && (args = strdup(args))
-     && (argn = setargs(args,NULL))
-     && (argv = malloc((argn+1) * sizeof(char *)))) {
-       *argv++ = args;
-       argn = setargs(args,argv);
-    }
+          if (j == 1)
+        	  strncpy(str_A, token, strlen(token));
+          else if (j==2)
+        	  strncpy(str_B, token, strlen(token));
+          else
+        	  break;
 
-    if (args && !argv) free(args);
+//          printf("%d, strA=%s\n", j, str_A);
+//          printf("%d, strB=%s\n", j, str_B);
 
-    *argc = argn;
+//          for (str2 = token; ; str2 = NULL) {
+//              subtoken = strtok_r(str2, argv[3], &saveptr2);
+//              if (subtoken == NULL)
+//                  break;
+//              printf(" --> %s\n", subtoken);
+//          }
+      }
 
-    /* Copy to original argv (av) */
-    for (int i = 0; i < argn; i++)
-    	strncpy(av[i], argv[i], strlen(argv[i]));
-
+	if ((strlen(str_A) && strlen(str_B)) > 0)
+		return RET_OK;
+	else
+		return RET_ERR;
 }
 
- void freeparsedargs(char **argv)
+/* Check if line is an comment '#' */
+int mtdLib_strings_lineIsComment(char *str_line)
+{
+	if (strlen(str_line) > 1) {
+		/* Check comment */
+		if (str_line[0] == '#')
+			return RET_OK;
+		else if (str_line[0] == '/')
+			return RET_OK;
+		else if (str_line[0] == ';')
+			return RET_OK;
+	}
+
+	return RET_ERR;
+}
+
+/* Check if line is an comment '#' */
+int mtdLib_strings_lineIsEmpty(char *str_line)
+{
+	if (strlen(str_line) > 1)
+		return RET_ERR;
+
+	return RET_OK;
+}
+
+//***************/
+static int mtd_strings_parsedSetArgs(char *args, char **argv)
+{
+	int count = 0;
+	while (isspace(*args)) ++args;
+	while (*args) {
+		if (argv) argv[count] = args;
+		while (*args && !isspace(*args)) ++args;
+		if (argv && *args) *args++ = '\0';
+		while (isspace(*args)) ++args;
+		count++;
+	}
+	return count;
+}
+
+//char **parsedargs(char *args, int *argc, char *argv)
+void mtd_strings_parsedArgs(char *args, int *argc, char *av[])
+{
+	char **argv = NULL;
+	int    argn = 0;
+
+	if (args && *args
+			&& (args = strdup(args))
+			&& (argn = mtd_strings_parsedSetArgs(args, NULL))
+			&& (argv = malloc((argn+1) * sizeof(char *))))
+	{
+
+		*argv++ = args;
+		argn = mtd_strings_parsedSetArgs(args, argv);
+	}
+
+	if (args && !argv)
+		free(args);
+
+	*argc = argn;
+
+    /* Copy to original argv (av) */
+	for (int i = 0; i < argn; i++)
+		strncpy(av[i], argv[i], strlen(argv[i]));
+}
+
+ void mtd_strings_parsedFree(char **argv)
  {
    if (argv) {
      free(argv[-1]);
@@ -211,28 +275,66 @@ void parsedargs(char *args, int *argc, char *av[])
  * @see mtd_server_cmd_run_SETPASS()
  * @return none
  */
-void mtd_lib_strings_trimLine (char *str)
+//void mtd_lib_strings_trimLine (char *str)
+//{
+//  char msgBuff[strlen(str)];
+//  memset(msgBuff, '\0', strlen(msgBuff));
+//  for (int pos=0; pos<strlen(str); pos++) {
+//    /*printf("F[%s] char[%p]\n", __FUNCTION__, str[pos]);*/
+//
+// 	/* Check on alphanumeric chars plus '.' on ASCII table */
+// 	if ( ( (str[pos]==0x2e) ||
+// 			(str[pos]>=0x30 && str[pos]<=0x39) ||
+//			(str[pos]>=0x41 && str[pos]<=0x5A) ||
+//			(str[pos]>=0x61 && str[pos]<=0x7A)) ) {
+//
+// 		msgBuff[pos]=str[pos];
+// 	}
+// 	else {
+// 		msgBuff[pos]='\0';
+// 		break;
+// 	}
+//  }
+//
+//  strncpy(str, msgBuff, strlen(str));
+//}
+
+/*
+* Trim a string (removing new line delimited).
+* @param char message is a string to trim
+* @see mtd_server_cmd_run_SETPASS()
+* @return none
+*/
+void mtd_lib_strings_trimNewLine (char *str)
 {
-  char msgBuff[strlen(str)];
-  memset(msgBuff, '\0', strlen(msgBuff));
-  for (int pos=0; pos<strlen(str); pos++) {
-    /*printf("F[%s] char[%p]\n", __FUNCTION__, str[pos]);*/
+	  char msgBuff[strlen(str)];
+	  memset(msgBuff, '\0', strlen(msgBuff));
+	  for (int pos=0; pos<strlen(str); pos++) {
+	    /*printf("F[%s] char[%p]\n", __FUNCTION__, str[pos]);*/
 
- 	/* Check on alphanumeric chars plus '.' on ASCII table */
- 	if ( ( (str[pos]==0x2e) ||
- 			(str[pos]>=0x30 && str[pos]<=0x39) ||
-			(str[pos]>=0x41 && str[pos]<=0x5A) ||
-			(str[pos]>=0x61 && str[pos]<=0x7A)) ) {
+	 	/* Check on alphanumeric chars plus '.' on ASCII table */
+	 	if ( !(str[pos]==0xA) ) {
+	 		msgBuff[pos]=str[pos];
+	 	}
+	 	else {
+	 		msgBuff[pos]='\0';
+	 		break;
+	 	}
+	  }
 
- 		msgBuff[pos]=str[pos];
- 	}
- 	else {
- 		msgBuff[pos]='\0';
- 		break;
- 	}
-  }
-
-  strncpy(str, msgBuff, strlen(str));
+	  strncpy(str, msgBuff, strlen(str));
 }
 
+/* Print a IP address from a human-view */
+void mtd_lib_strings_showIp(int ip, char *str)
+{
+	unsigned char bytes[4];
+    bzero(str, sizeof(str));
 
+    bytes[0] = ip & 0xFF;
+    bytes[1] = (ip >> 8) & 0xFF;
+    bytes[2] = (ip >> 16) & 0xFF;
+    bytes[3] = (ip >> 24) & 0xFF;
+
+    sprintf(str, "%d.%d.%d.%d", bytes[3], bytes[2], bytes[1], bytes[0]);
+}

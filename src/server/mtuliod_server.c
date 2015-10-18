@@ -14,6 +14,7 @@
 
 #include <mtuliod.h>
 #include <mtuliod_server.h>
+#include <mtd_stdout.c>
 
 /* GLOBALS */
 int countConn;
@@ -29,12 +30,14 @@ int countConn;
 int mtd_srv_init(mtd_srv_cfg_t *mtd_config, struct sockaddr_in *server, int *socket_desc)
 {
     int ret = -99;
+    char str[MAX_BUFF_SIZE], str_log[MAX_BUFF_SIZE];
 
     //Create socket
     *socket_desc = socket(AF_INET , SOCK_STREAM , 0);
     if (*socket_desc == -1)
     {
-        printf("Could not create socket");
+    	mtd_stdout_print("Could not create socket");
+    	return RET_ERR;
     }
 
     /* Creating sockaddr_in structure - check data from config file */
@@ -44,19 +47,14 @@ int mtd_srv_init(mtd_srv_cfg_t *mtd_config, struct sockaddr_in *server, int *soc
     server->sin_addr.s_addr = INADDR_ANY;
     //server->sin_addr.s_addr = INADDR_LOOPBACK;
 
-    //server->sin_addr.s_addr = htons(atoi(mtd_config->bind_ip4addr));
-    /*int ipAddr = server->sin_addr.s_addr;
-    char str[INET_ADDRSTRLEN];
-    inet_ntop( AF_INET, &ipAddr, str, INET_ADDRSTRLEN );
-    printf("\n\tstr_ip=[%s] [%s] [%i]=[%i]\n", str, mtd_config->bind_ip4addr, ipAddr, atoi(mtd_config->bind_ip4addr));*/
-
     //server->sin_port = htons( 8888 );
     server->sin_port = htons( atoi(mtd_config->bind_port) );
 
+    /* Starting server/binf */
+    mtd_lib_strings_showIp(ntohl(server->sin_addr.s_addr), str);
 
-    printf(" # Starting Server on address %x:%x ... ",
-    		ntohl(server->sin_addr.s_addr), ntohs(server->sin_port) );
-    fflush(stdout);
+    sprintf(str_log, " # Starting Server on address %s:%d ... ", str, ntohs(server->sin_port) );
+	mtd_stdout_print(str_log);
 
     // Bind
     ret = bind(*socket_desc,(struct sockaddr *)server , sizeof(*server) );
@@ -64,10 +62,11 @@ int mtd_srv_init(mtd_srv_cfg_t *mtd_config, struct sockaddr_in *server, int *soc
     {
         //print the error message
         perror(" # [FAIL] Bind failed. Error");
+    	mtd_stdout_print(" # [FAIL] Bind failed. Error");
         return ret;
     }
 
-    //Listen
+    // Listen
     return listen(*socket_desc , 3);
 }
 
@@ -80,6 +79,7 @@ int mtd_srv_init(mtd_srv_cfg_t *mtd_config, struct sockaddr_in *server, int *soc
 void *mtd_srv_connection_handler(void *socket_data)
 {
 	//Get the socket descriptor
+	char str_log[MAX_BUFF_SIZE];
     int socket = *(int*)socket_data;
     int read_size = 0;
     int terminate_client = 0;
@@ -103,19 +103,23 @@ void *mtd_srv_connection_handler(void *socket_data)
     	read_size = recv(socket , client_message , MAX_BUFF_SIZE , 0);
 		if ((read_size) > 0) {
 
-			printf(" # [HandlerID: %x] Receive message: %s", socket, client_message);
+			sprintf(str_log, " # [HandlerID: %x] Receive message: %s", socket, client_message);
+			mtd_stdout_print(str_log);
 
 			/* Parse each message sent by clients - each <ENTER> from telnet */
     		if (mtd_srv_cmd_parseMessage(client_message) == 99 ) { // loop 'til QUIT
-    			printf(" # [HandlerID: %x] Closing connection by command QUIT\n", socket);
-				fflush(stdout);
+    			sprintf(str_log, " # [HandlerID: %x] Closing connection by command QUIT\n", socket);
+    			mtd_stdout_print(str_log);
+				//fflush(stdout);
+
 				terminate_client=1;
 				continue; // goto next loop
     		}
 
     		//Send the message back to client
             nb = write(socket, client_message , strlen(client_message));
-            printf(" # [HandlerID: %x] Answer message was sent with success. Bytes=[%d]\n", socket, nb);
+            sprintf(str_log, " # [HandlerID: %x] Answer message was sent with success. Bytes=[%d]\n", socket, nb);
+			mtd_stdout_print(str_log);
 
     		//clear the message buffer
     		memset(client_message, 0, MAX_BUFF_SIZE);
@@ -123,10 +127,13 @@ void *mtd_srv_connection_handler(void *socket_data)
     	    message = "[MTd]$ ";
     	    nb = write(socket , message , strlen(message));
 
-    	    printf(" # [HandlerID: %x] Console message was sent with success, waiting new cmds. Bytes=[%d]\n", socket, nb);
+    	    sprintf(str_log, " # [HandlerID: %x] Console message was sent with success, waiting new cmds. Bytes=[%d]\n", socket, nb);
+    	    mtd_stdout_print(str_log);
     	}
     	else {
-    		puts(" %% Term received");
+    		//puts(" %% Term received");
+    		sprintf(str_log, " # [HandlerID: %x] Terminate conn received\n", socket);
+    	    mtd_stdout_print(str_log);
     		terminate_client=1;
     	}
     } while (!terminate_client);
@@ -135,12 +142,16 @@ void *mtd_srv_connection_handler(void *socket_data)
 
     if(read_size == 0)
     {
-        puts(" %% Client disconnected");
+        //puts(" %% Client disconnected");
+        sprintf(str_log, " # [HandlerID: %x] Client disconnected\n", socket);
+		mtd_stdout_print(str_log);
         fflush(stdout);
     }
     else if(read_size == -1)
     {
-        perror(" %% Recv failed");
+        //perror(" %% Recv failed");
+        sprintf(str_log, " # [HandlerID: %x] Failed to receive message\n", socket);
+		mtd_stdout_print(str_log);
     }
 
     countConn--;
@@ -151,8 +162,7 @@ void *mtd_srv_connection_handler(void *socket_data)
 
     /*if (socket) puts(" %% Client not disconnected.");
     else puts(" %% Client disconnected.");*/
-    //printf(" # [HandlerID: %x] Client disconnected\n", socket);
-	fflush(stdout);
+	//fflush(stdout);
 
     return 0;
 }
@@ -166,7 +176,8 @@ void *mtd_srv_connection_handler(void *socket_data)
 */
 int mtd_srv_main(mtd_srv_cfg_t *mtd_config)
 {
-    int socket_desc , client_sock , len;
+    char str_log[MAX_BUFF_SIZE];
+	int socket_desc , client_sock , len;
     struct sockaddr_in server , client;
     pthread_t thread_id;
 
@@ -177,34 +188,43 @@ int mtd_srv_main(mtd_srv_cfg_t *mtd_config)
 
 	// Start server
 	if ( mtd_srv_init(mtd_config, &server, &socket_desc) == 0 ) {
-	    printf (" [Success] \n");
+	    //printf (" [Success] \n");
+		mtd_stdout_print(" [Success] \n");
 	} else {
-		fflush(stdout); printf(" %% Error starting server \n");
+		//fflush(stdout);
+		//printf(" %% Error starting server \n");
+		mtd_stdout_print(" %% Error starting server \n");
 		exit(1);
 	}
 
 	// Client
 
     //Accept and incoming connection
-    puts(" # Waiting for incoming connections...");
+    //puts(" # Waiting for incoming connections...");
+    mtd_stdout_print(" # Waiting for incoming connections...\n");
 
 	while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&len)) )
     {
         countConn++;
-    	printf(" # Receiving connection [%d] ... ", countConn);
+    	sprintf(str_log, " # Receiving connection [%d] ... ", countConn);
+		mtd_stdout_print(str_log);
 
         if( pthread_create( &thread_id , NULL , mtd_srv_connection_handler , (void*)&client_sock) < 0)
         {
-            perror(" [FAIL] could not create thread");
+            //perror(" %% [FAIL] could not create thread");
+            mtd_stdout_print(" [FAIL] could not create thread\n");
             return 1;
         }
-        else
-        	printf("[OK] [Handler assigned: %x]\n", client_sock);
+        else {
+        	sprintf(str_log, "[OK] [Handler assigned: %x]\n", client_sock);
+        	mtd_stdout_print(str_log);
+        }
     }
 
     if (client_sock < 0)
     {
-        perror(" %% Accept failed ");
+        //perror(" %% Accept failed ");
+        mtd_stdout_print(" [FAIL]  Accept failed \n");
         return 1;
     }
 
@@ -224,31 +244,48 @@ int main(int argc , char *argv[])
 	/* Server config file */
 	//mtd_srv_cfg_t *mtd_config;
 
-	/* Init envs */
+	/* Init structs  */
 	if (!mtd_config) {
 		mtd_config = (mtd_srv_cfg_t *)malloc(sizeof(mtd_srv_cfg_t));
 		memset (mtd_config, 0, sizeof(mtd_srv_cfg_t));
 	}
 
+	if (!mtd_opts) {
+		mtd_opts = (mtd_options_t *)malloc(sizeof(mtd_options_t));
+		memset (mtd_opts, 0, sizeof(mtd_options_t));
+	}
+
+
 	/* Might to be read from command line */
 	//sprintf(mtd_config.config_file, "conf/mtuliod.conf");
-	sprintf(mtd_config->config_file, "conf/mtuliod.conf");
-	//sprintf(mtd_config.log_file, "mtuliod.log");
-	mtd_config->test = 0;
+
+	if (mtd_lib_fileExist("conf/mtuliod.conf") == RET_OK)
+		sprintf(mtd_config->config_file, "conf/mtuliod.conf");
+	else {
+		mtd_stdout_print("# Configuration file not found\n");
+		goto GT_EXIT;
+	}
+
+	sprintf(mtd_config->log_file, "mtuliod.log");
+	mtd_opts->log = FLAG_ENABLED;
+	//mtd_config->test = 0;
+
+	mtd_stdout_print("\t*** Starting MTULIOd Server *** \n");
 
 	/* Load configuration file  */
 	ret = mtd_srv_config_main(mtd_config);
 	if (ret != 0) {
-		printf("# Error opening config file\n");
-		exit(ret);
+		mtd_stdout_print("# Error opening config file\n");
+		goto GT_EXIT;
 	}
 
 	/* Start TCP server */
-	mtd_srv_main(mtd_config);
+	ret = mtd_srv_main(mtd_config);
 
+	GT_EXIT:
 	/* Free structure */
 	if (mtd_config)
 		free (mtd_config);
 
-	exit (0);
+	exit (ret);
 }

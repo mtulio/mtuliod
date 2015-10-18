@@ -38,7 +38,7 @@ int mtd_server_cmd_run_HOSTNAME(char *msg_cmd, char *msg_out)
 
 	sprintf(msg_out, "%s_%s  OK# Hostname is: %s", PFIX_CLI, msg_cmd, str_buf);
 
-	printf("\n msg[%s]", msg_cmd);
+	//printf("\n msg[%s]", msg_cmd);
 	return 0;
 }
 
@@ -55,25 +55,26 @@ int mtd_server_cmd_run_SETPASS(char *msg_line, char *msg_out)
 {
 	FILE *fd;
 	char str_cmd[MAX_BUFF_SIZE], str_buf[MAX_BUFF_SIZE];
-	int tmp_argc, argc;
-	int len_str = 0;
+	int argc, len_str, ret;
 
 	memset (str_cmd, 0, MAX_BUFF_SIZE);
 	memset (str_buf, 0, MAX_BUFF_SIZE);
 	argc = len_str = 0;
+	ret = RET_ERR;
 
 	/* Get vector size */
-	tmp_argc = mtdLib_str_getColNumbers(msg_line, ' ');
+	argc = mtdLib_str_getColNumbers(msg_line, ' ');
 
 	/* alloc mem vector */
-	char *argv[tmp_argc];
-	for (int i = 0; i < tmp_argc; i++) {
+	char *argv[argc];
+	for (int i = 0; i < argc; i++) {
 		argv[i] = (char *)malloc( (sizeof(msg_line)));
-		memset(argv[i], sizeof(argv[i]), 0);
+		//memset(argv[i], sizeof(argv[i]), 0);
+		bzero(argv[i], sizeof(argv[i]));
 	}
 
     /* Get arguments to vector */
-	parsedargs(msg_line, &argc, argv);
+	mtd_strings_parsedArgs(msg_line, &argc, argv);
 
 	/* SHOW  argv */
 	//printf("=> argc(%d)\n", argc);
@@ -90,11 +91,17 @@ int mtd_server_cmd_run_SETPASS(char *msg_line, char *msg_out)
 	if (argc < 4) {
 		sprintf(msg_out, "%s_%s ERR%% cmd [SETPASS]: missing arguments. See HELP.\n",
 				PFIX_CLI, argv[0]);
-		return 2;
+
+		ret = RET_ERR;
+		goto GT_FINAL;
+		//return 2;
 	} else if (argc > 4) {
 		sprintf(msg_out, "%s_%s ERR%% cmd [SETPASS]: number of args was exceed the allowed [%d]. See HELP\n",
 				PFIX_CLI, argv[0], argc);
-		return 3;
+
+		ret = RET_ERR;
+		goto GT_FINAL;
+		//return 3;
 	}
 
 	/* Strings trim line */
@@ -102,16 +109,19 @@ int mtd_server_cmd_run_SETPASS(char *msg_line, char *msg_out)
     printf(" __FUNCTION__(%s) 0 - trim argv[3]=%s\n", __FUNCTION__, argv[1]);
 	printf(" __FUNCTION__(%s) 0 - trim argv[2]=%s\n", __FUNCTION__, argv[2]);
     printf(" __FUNCTION__(%s) 0 - trim argv[1]=%s\n", __FUNCTION__, argv[3]);*/
-    mtd_lib_strings_trimLine (argv[0]);
-    mtd_lib_strings_trimLine (argv[1]);
-    mtd_lib_strings_trimLine (argv[2]);
-    mtd_lib_strings_trimLine (argv[3]);
+	mtd_lib_strings_trimNewLine (argv[0]);
+	mtd_lib_strings_trimNewLine (argv[1]);
+	mtd_lib_strings_trimNewLine (argv[2]);
+	mtd_lib_strings_trimNewLine (argv[3]);
 
 	/* TODO: validate SECRET with config file */
     if (strcmp(argv[1], mtd_config->secret) != 0) {
 		sprintf(msg_out, "%s_%s ERR%% cmd [SETPASS]: Wrong SECRET [%s]. See HELP\n",
 				PFIX_CLI, argv[0], argv[1]);
-		return 5;
+
+		ret = RET_ERR;
+		goto GT_FINAL;
+		//return 5;
     }
 
 	/* Create a command */
@@ -120,39 +130,48 @@ int mtd_server_cmd_run_SETPASS(char *msg_line, char *msg_out)
 	/* Run a command */
 	fd = popen(str_cmd, "r");
 	if (!fd) {
-		sprintf(msg_out, "%s_%s ERR%% Error running command [SETPASS].\n", PFIX_CLI, argv[0]);
-		return 1;
+		sprintf(msg_out, "%s_%s ERR%% Error running command [SETPASS](passwd).\n", PFIX_CLI, argv[0]);
+
+		ret = RET_ERR;
+		goto GT_FINAL;
+		//return 1;
 	}
 
     /* Get command stdout */
     while (fgets (str_buf, sizeof (str_buf), fd) <= 0);
 
 	/* Close fd that ran a command */
-    pclose (fd);
+    if (fd)
+    	pclose (fd);
 
-    /* Check result */
-//	printf("\n 3 msg_line[%s] tmp_argc=[%i] argc=[%i] str_cmd[%s] str_buf[%s] str_buf.len[%d]\n",
-//			msg_line, tmp_argc, argc, str_cmd, str_buf, strlen(str_buf));
-
-    mtd_lib_strings_trimLine (str_buf);
-//    printf(" __FUNCTION__(%s) 5.2 - str_buf(%s) len(%d)\n", __FUNCTION__, str_buf, strlen(str_buf));
+    /* Check result of comand */
+    mtd_lib_strings_trimNewLine (str_buf);
 
     /* TODO: check all available paswd errors code */
-    if (strlen(str_buf) == 3) { // error code was found
+    if (atoi(str_buf) == 0 ){
+    	sprintf(msg_out, "%s_%s   OK# SETPASS result is: SUCCESS [%s] \n",
+    			PFIX_CLI, argv[0], str_buf);
+
+    	ret = RET_OK;
+    }
+    else { // error code was found
     	if (strncmp(str_buf, "254", strlen(str_buf)) == 254)
     		sprintf(msg_out, "%s_%s  ERR# cmd [SETPASS] result: Only 'root' is alllowed to change password [%i] \n",
     				PFIX_CLI, argv[0], atoi(str_buf));
     	else if (atoi(str_buf) == 252)
     		sprintf(msg_out, "%s_%s  ERR# cmd [SETPASS] result: User [%s] not found [%i] \n",
     				PFIX_CLI, argv[0], argv[2], atoi(str_buf));
+
+    	ret = RET_ERR;
     }
-    else
-		sprintf(msg_out, "%s_%s   OK# SETPASS result is: SUCCESS [%s] \n", PFIX_CLI, argv[0], str_buf);
+
+    GT_FINAL:
+	sprintf(str_buf, " # cmd[SETPASS] %s() : %s", __FUNCTION__, msg_out);
+	mtd_stdout_print(str_buf);
 
     /* free */
     for (int i = 0; i < argc; i++)
     	free(argv[i]);
 
-	return 0;
-
+	return ret;
 }

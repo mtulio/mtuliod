@@ -8,6 +8,10 @@
 #ifndef SRC_LIB_MTDLIB_H_
 #define SRC_LIB_MTDLIB_H_
 
+/* API of strings */
 
+
+/* API of files */
+int mtd_lib_fileExist (char *filename);
 
 #endif /* SRC_LIB_MTDLIB_H_ */
