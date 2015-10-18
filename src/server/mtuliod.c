@@ -51,10 +51,14 @@ int main(int argc , char *argv[])
 	/* Might to be read from command line */
 	//sprintf(mtd_config.config_file, "conf/mtuliod.conf");
 
-	if (mtd_lib_fileExist("conf/mtuliod.conf") == RET_OK)
+	if (mtd_lib_fileExist("/etc/mtuliod/mtuliod.conf") == RET_OK) {
+		sprintf(mtd_config->config_file, "/etc/mtuliod/mtuliod.conf");
+	} else if (mtd_lib_fileExist("mtuliod.conf") == RET_OK) {
+		sprintf(mtd_config->config_file, "mtuliod.conf");
+	} else if (mtd_lib_fileExist("conf/mtuliod.conf") == RET_OK) {
 		sprintf(mtd_config->config_file, "conf/mtuliod.conf");
-	else {
-		mtd_stdout_print("# Configuration file not found\n");
+	} else {
+		mtd_stdout_print("# Configuration file was not found\n");
 		goto GT_EXIT;
 	}
 

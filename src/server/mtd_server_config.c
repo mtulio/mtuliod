@@ -111,6 +111,9 @@ int mtd_srv_config_readData(mtd_srv_cfg_t *mtd_config)
 				else if (strncmp(str_attr, "LOG_FILE", strlen("LOG_FILE")) == 0) { // LOG_FILE
 					strcpy(mtd_config->log_file, str_value);
 
+					if (mtd_lib_fileExist(mtd_config->log_file) != RET_OK) {
+						strcpy(mtd_config->log_file, "mtuliod.log");
+					}
 					//printf(" '-> LOG_FILE \t\t = [%s] \n", mtd_config->log_file);
 					sprintf(str_log, " '-> LOG_FILE \t\t = [%s] \n", mtd_config->log_file);
 					mtd_stdout_print(str_log);
