@@ -34,3 +34,6 @@
 # Eclipse files
 *.cproject
 *.project
+
+# Temp dirs
+tmp/
