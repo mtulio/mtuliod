@@ -108,9 +108,8 @@ void *mtd_srv_connection_handler(void *socket_data)
 	//Get the socket descriptor
 	char str_log[MAX_BUFF_SIZE];
     int socket = *(int*)socket_data;
-    int read_size = 0;
     int terminate_client = 0;
-    int nb = 0;
+    int nbytes = 0;
 
     char *message , client_message[MAX_BUFF_SIZE];
 
@@ -127,8 +126,19 @@ void *mtd_srv_connection_handler(void *socket_data)
     //Receive a message from client
     do
     {
-    	read_size = recv(socket , client_message , MAX_BUFF_SIZE , 0);
-		if ((read_size) > 0) {
+    	/* rcv() returns:
+    	 *  >0 : received a message
+    	 *  =0 : client closed the connection
+    	 *  -1 : Error receiving message */
+    	nbytes = recv(socket , client_message , MAX_BUFF_SIZE , 0);
+		if ((nbytes) > 0) { // received message by client
+
+			/* TODO: Use functions to get more information from client
+			 * getpeername() to identify the session of client, also check:
+			 * gethostbyaddr()
+			 * gethostname()
+			 * gethostbyname()
+			*/
 
 			sprintf(str_log, " # [HandlerID: %x] Receive message: %s", socket, client_message);
 			mtd_stdout_print(str_log);
@@ -144,37 +154,41 @@ void *mtd_srv_connection_handler(void *socket_data)
     		}
 
     		//Send the message back to client
-            nb = write(socket, client_message , strlen(client_message));
-            sprintf(str_log, " # [HandlerID: %x] Answer message was sent with success. Bytes=[%d]\n", socket, nb);
+            nbytes = write(socket, client_message , strlen(client_message));
+            sprintf(str_log, " # [HandlerID: %x] Answer message was sent with success. Bytes=[%d]\n", socket, nbytes);
 			mtd_stdout_print(str_log);
 
     		//clear the message buffer
     		memset(client_message, 0, MAX_BUFF_SIZE);
 
     	    message = "[MTd]$ ";
-    	    nb = write(socket , message , strlen(message));
+    	    nbytes = write(socket , message , strlen(message));
 
-    	    sprintf(str_log, " # [HandlerID: %x] Console message was sent with success, waiting new cmds. Bytes=[%d]\n", socket, nb);
+    	    sprintf(str_log, " # [HandlerID: %x] Console message was sent with success, waiting new cmds. Bytes=[%d]\n", socket, nbytes);
     	    mtd_stdout_print(str_log);
     	}
-    	else {
-    		//puts(" %% Term received");
-    		sprintf(str_log, " # [HandlerID: %x] Terminate conn received\n", socket);
+		else if (nbytes == 0) { // Client finish connection
+    	    //puts(" %% Term received");
+    		sprintf(str_log, " # [HandlerID: %x] Terminate connection received\n", socket);
     	    mtd_stdout_print(str_log);
     		terminate_client=1;
+		}
+		else {
+    	    sprintf(str_log, " # [HandlerID: %x] Error receiving message from a client\n", socket);
+    	    mtd_stdout_print(str_log);
     	}
     } while (!terminate_client);
 
     //puts("1 exit rcv");
 
-    if(read_size == 0)
+    if(nbytes == 0)
     {
         //puts(" %% Client disconnected");
         sprintf(str_log, " # [HandlerID: %x] Client disconnected\n", socket);
 		mtd_stdout_print(str_log);
         fflush(stdout);
     }
-    else if(read_size == -1)
+    else if(nbytes == -1)
     {
         //perror(" %% Recv failed");
         sprintf(str_log, " # [HandlerID: %x] Failed to receive message\n", socket);
@@ -183,13 +197,11 @@ void *mtd_srv_connection_handler(void *socket_data)
 
     countConn--;
 
-    //pthread_exit(0);
     // Close TCP socket for client
     if (socket) close(socket);
 
     /*if (socket) puts(" %% Client not disconnected.");
     else puts(" %% Client disconnected.");*/
-	//fflush(stdout);
 
     return 0;
 }
@@ -205,7 +217,7 @@ int mtd_srv_main(mtd_srv_cfg_t *mtd_config)
 {
     char str_log[MAX_BUFF_SIZE];
     int socket_desc , client_sock , len;
-    struct sockaddr_in server , client;
+    struct sockaddr_in server, client;
     pthread_t thread_id;
 
     uint32_t in_addr;
@@ -246,6 +258,8 @@ int mtd_srv_main(mtd_srv_cfg_t *mtd_config)
 				in_addr & 0xFF);
 		mtd_stdout_print(str_log);
 
+		//TODO: create a struct to handle client information (sockaddr struct, sock descriptor, handle id, ...)
+		//TODO: Use select to manage all the connections and optimize the server
         if( pthread_create( &thread_id , NULL , mtd_srv_connection_handler , (void*)&client_sock) < 0)
         {
             //perror(" %% [FAIL] could not create thread");
@@ -264,6 +278,10 @@ int mtd_srv_main(mtd_srv_cfg_t *mtd_config)
         mtd_stdout_print(" [FAIL]  Accept failed \n");
         return 1;
     }
+
+    /* Close server */
+    if (socket_desc)
+    	close(socket_desc);
 
     return 0;
 }
