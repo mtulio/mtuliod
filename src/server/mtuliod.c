@@ -9,12 +9,6 @@
 #include<string.h>
 #include<stdlib.h>
 
-#include<sys/socket.h>
-#include<arpa/inet.h>
-#include<unistd.h>
-
-#include<pthread.h>
-
 #include <mtuliod.h>
 #include <mtd_lib.h>
 #include <mtd_stdout.h>
