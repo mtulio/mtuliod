@@ -9,6 +9,8 @@
 #include<string.h>
 #include<stdlib.h>
 
+#include <getopt.h>
+
 #include <mtuliod.h>
 #include <mtd_lib.h>
 #include <mtd_stdout.h>
@@ -82,7 +84,7 @@ int mtuliod_initConfig(void)
 /* Clean config / free structs */
 void mtuliod_end(void)
 {
-	mtd_stdout_print("#>> Cleaning server config <<#\n");
+	//mtd_stdout_print("#>> Cleaning server config <<#\n");
 
 	/* Free structures */
 	if (mtd_config)
@@ -93,6 +95,39 @@ void mtuliod_end(void)
 
 }
 
+/****************************/
+/* options. */
+static struct option longopts[] =
+{
+  { "daemon",      no_argument,       NULL, 'd'},
+  { "config_file", required_argument, NULL, 'f'},
+  { "pid_file",    required_argument, NULL, 'i'},
+  { "help",        no_argument,       NULL, 'h'},
+  { "version",     no_argument,       NULL, 'v'},
+  { 0 }
+};
+
+/* Help information display. */
+static void mtuliod_mainUsage (int status)
+{
+  if (status != 0)
+    fprintf (stderr, "Try `mtuliod --help' for more information.\n");
+  else
+    {
+      printf ("Usage : %s [OPTION...]\n\
+Daemon which manages RIP version 1 and 2.\n\n\
+-d, --daemon       Runs in daemon mode\n\
+-f, --config_file  Set configuration file name\n\
+-i, --pid_file     Set process identifier file name\n\
+-v, --version      Print program version\n\
+-h, --help         Display this help and exit\n\
+\n\
+Report bugs to 'mtuliod'\n");
+    }
+
+  exit (status);
+}
+
 /*
 * Main function - might to be change when daemon function will be created.
 * @param argc number of arguments in argv vector
@@ -101,6 +136,40 @@ void mtuliod_end(void)
 */
 int main(int argc , char *argv[])
 {
+
+	int daemon_mode = 0;
+	char *config_file;
+	config_file = (char *)malloc(sizeof(char) * 64);
+
+  /* Command line option parse. */
+  while (1) {
+    int opt;
+    opt = getopt_long (argc, argv, "df:i:hv", longopts, 0);
+    if (opt == EOF)
+    	break;
+
+    switch (opt)
+	{
+	  case 0:
+		break;
+      case 'd':
+        daemon_mode = 1;
+        break;
+	  case 'f':
+		config_file = optarg;
+		break;
+	  case 'v':
+		  printf("0.1\n");
+		  exit (0);
+		  break;
+	  case 'h':
+		  mtuliod_mainUsage (0);
+		  break;
+	  default:
+		  mtuliod_mainUsage (1);
+	     break;
+	  }
+	}
 
 	/* Init main config file */
 	if ( (ret = mtuliod_initConfig()) != 0 )
@@ -125,12 +194,7 @@ int main(int argc , char *argv[])
 	/* END */
 	GT_EXIT:
 	/* Free structures */
-//	if (mtd_config)
-//		free (mtd_config);
-//
-//	if (mtd_opts)
-//		free (mtd_opts);
-//
+
 	mtuliod_end();
 
 	exit (ret);
