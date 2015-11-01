@@ -26,4 +26,7 @@ void mtd_lib_strings_showIp(int ip, char *str);
 /* API of files */
 int mtd_lib_fileExist (char *filename);
 
+/* Daemon */
+int mtd_lib_daemon_init (int nochdir, int noclose);
+
 #endif /* SRC_LIB_MTD_LIB_H_ */

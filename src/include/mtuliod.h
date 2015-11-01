@@ -20,8 +20,6 @@ typedef struct {
 	unsigned int max_pool_conn;
 } mtd_srv_cfg_t;
 
-mtd_srv_cfg_t *mtd_config;
-
 /* Available commands */
 typedef enum {
 	CMD_HELP,
@@ -38,6 +36,10 @@ typedef enum {
 #define RET_ERR			1
 #define RET_NOTFOUND	10
 #define RET_IOERR		20
+
+/* Daemon error */
+#define RET_ERR_DM01	-20
+#define RET_ERR_DM02	-21
 
 /* Max buffer size */
 #define MAX_BUFF_SIZE	200
@@ -60,7 +62,11 @@ typedef struct {
 	uint16_t log;
 } mtd_options_t;
 
-mtd_options_t *mtd_opts;
-
+/* Signal struct */
+struct mtuliod_signal_t
+{
+  int signal;                     /* signal number    */
+  void (*handler) (void);         /* handler to call  */
+};
 
 #endif /* SRC_INCLUDE_MTULIOD_H_ */

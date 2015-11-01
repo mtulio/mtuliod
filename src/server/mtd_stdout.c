@@ -39,3 +39,17 @@ void mtd_stdout_print(char *line)
     fflush(stdout);
 }
 
+/* Print error message */
+void mtd_stdout_msg(int ret_code)
+{
+	switch (ret_code) {
+	case RET_ERR_DM01:
+		mtd_stdout_print ("# ERROR DAEMON: fork failed\n");
+		break;
+	case RET_ERR_DM02:
+		mtd_stdout_print ("# ERROR DAEMON: setsid failed\n");
+		break;
+	default:
+		mtd_stdout_print ("# Unknown message\n");
+	}
+}
