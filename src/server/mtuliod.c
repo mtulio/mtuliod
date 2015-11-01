@@ -27,7 +27,6 @@ mtd_options_t *mtd_opts;
 /* Global return control */
 short int ret = -1;
 
-
 /**********************************************************/
 /*
  *  Initialize main configuration reading from file and
@@ -96,7 +95,7 @@ void mtuliod_end(void)
 }
 
 /****************************/
-/* options. */
+/* options using getopt. */
 static struct option longopts[] =
 {
   { "daemon",      no_argument,       NULL, 'd'},
@@ -110,20 +109,15 @@ static struct option longopts[] =
 /* Help information display. */
 static void mtuliod_mainUsage (int status)
 {
-  if (status != 0)
-    fprintf (stderr, "Try `mtuliod --help' for more information.\n");
-  else
-    {
       printf ("Usage : %s [OPTION...]\n\
-Daemon which manages RIP version 1 and 2.\n\n\
+Daemon which manages MTuliod.\n\n\
 -d, --daemon       Runs in daemon mode\n\
 -f, --config_file  Set configuration file name\n\
 -i, --pid_file     Set process identifier file name\n\
 -v, --version      Print program version\n\
 -h, --help         Display this help and exit\n\
 \n\
-Report bugs to 'mtuliod'\n");
-    }
+Report bugs to 'git@mtulio.eng.br'\n");
 
   exit (status);
 }
@@ -137,14 +131,17 @@ Report bugs to 'mtuliod'\n");
 int main(int argc , char *argv[])
 {
 
-	int daemon_mode = 0;
-	char *config_file;
-	config_file = (char *)malloc(sizeof(char) * 64);
+	int arg_daemon_mode = 0;
+	char arg_file_config[MAX_BUFF_SIZE];
+	char arg_file_pid[MAX_BUFF_SIZE];
+	bzero(arg_file_config, strlen(arg_file_config));
+	bzero(arg_file_pid, strlen(arg_file_pid));
+
 
   /* Command line option parse. */
   while (1) {
     int opt;
-    opt = getopt_long (argc, argv, "df:i:hv", longopts, 0);
+    opt = getopt_long (argc, argv, "df:i:h:v", longopts, 0);
     if (opt == EOF)
     	break;
 
@@ -153,48 +150,67 @@ int main(int argc , char *argv[])
 	  case 0:
 		break;
       case 'd':
-        daemon_mode = 1;
+        arg_daemon_mode = 1;
         break;
 	  case 'f':
-		config_file = optarg;
+		/*TODO: get argument string */
+//		*arg_file_config = optarg;
+		strncpy(optarg, arg_file_config, strlen(optarg));
+		break;
+	  case 'i':
+	    /*TODO: get argument string */
+//		*arg_file_pid = optarg;
+		strncpy(optarg, arg_file_pid, strlen(optarg));
+		printf("ARGS: arg_file_pid[%s]\n",  optarg);
 		break;
 	  case 'v':
-		  printf("0.1\n");
-		  exit (0);
-		  break;
+		printf("0.1\n");
+		exit (0);
+		break;
 	  case 'h':
-		  mtuliod_mainUsage (0);
-		  break;
+		mtuliod_mainUsage (0);
+		break;
 	  default:
-		  mtuliod_mainUsage (1);
-	     break;
+		mtuliod_mainUsage (1);
+	    break;
 	  }
+	}
+
+  /* Show args */
+//  printf("ARGS: arg_daemon_mode[%d], arg_file_config[%s], arg_file_pid[%s]\n",
+//		  arg_daemon_mode,
+//		  arg_file_config,
+//		  arg_file_pid);
+
+	/* Create a daemon */
+	if (arg_daemon_mode == 1) {
+		ret = mtd_lib_daemon_init (1, 1);
+		if ( (ret) < 0 ) {
+			printf(" '%s': Starting daemon ... ERROR ", "mtuliod");
+			mtd_stdout_msg(ret);
+		} else {
+			printf(" '%s': Starting daemon ... PID %d \n", "mtuliod", ret);
+		}
 	}
 
 	/* Init main config file */
 	if ( (ret = mtuliod_initConfig()) != 0 )
 		goto GT_EXIT;
 
-	/* Create a daemon */
-	if ( (ret = mtd_lib_daemon_init (1, 0)) < 0)
-	{
-		mtd_stdout_msg(ret);
-		//mtd_stdout_print("#% ERROR MTuliod daemon failed ");
-		exit (1);
-	}
-	else {
-		mtuliod_signal_main ();
-	}
+	/* Init System Signals */
+	mtuliod_signal_init ();
+
 
 	/* Start TCP server */
 	if ( (ret = mtd_srv_main(mtd_config)) != 0 )
 		mtd_stdout_print("#% ERROR - starting TCP server\n");
 
 
+
 	/* END */
 	GT_EXIT:
-	/* Free structures */
 
+	/* Free structures */
 	mtuliod_end();
 
 	exit (ret);

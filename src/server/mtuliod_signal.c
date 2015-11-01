@@ -210,7 +210,7 @@ static void mtuliod_SIGSYS (void)
 
 /**********************************************************/
 /* Initialize all signals */
-void mtuliod_signal_init ( int sigc, struct mtuliod_signal_t signals[] )
+void mtuliod_signal_handleAll ( int sigc, struct mtuliod_signal_t signals[] )
 {
 	int i = 0;
 	struct mtuliod_signal_t *sig;
@@ -232,8 +232,8 @@ void mtuliod_signal_init ( int sigc, struct mtuliod_signal_t signals[] )
 	}
 }
 
-/* Declare all signals */
-void mtuliod_signal_main(void)
+/* Declare all signals and install it */
+void mtuliod_signal_init (void)
 {
 	static struct mtuliod_signal_t mtuliod_signals[] =
 	{
@@ -268,7 +268,7 @@ void mtuliod_signal_main(void)
 	  { .signal = SIGSYS, .handler = &mtuliod_SIGSYS,  },
 	};
 
-	mtuliod_signal_init (array_size(mtuliod_signals), mtuliod_signals);
+	mtuliod_signal_handleAll (array_size(mtuliod_signals), mtuliod_signals);
 }
 
 /*

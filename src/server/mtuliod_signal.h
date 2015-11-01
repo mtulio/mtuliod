@@ -8,9 +8,7 @@
 #ifndef SERVER_MTULIOD_SIGNAL_H_
 #define SERVER_MTULIOD_SIGNAL_H_
 
-/**********************************************************/
-/* Signal handlers from this daemon. */
-
-void mtuliod_signal_main(void);
+/* Signal handlers from this process */
+void mtuliod_signal_init(void);
 
 #endif /* SRC_SERVER_MTULIOD_SIGNAL_H_ */

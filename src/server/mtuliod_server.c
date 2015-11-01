@@ -78,7 +78,7 @@ int mtd_srv_init(mtd_srv_cfg_t *mtd_config, struct sockaddr_in *server, int *soc
     {
         //print the error message
         perror(" # [FAIL] Bind failed. Error");
-    	mtd_stdout_print(" # [FAIL] Bind failed. Error");
+    	mtd_stdout_print(" # [FAIL] Bind failed.\n");
         return ret;
     }
 
