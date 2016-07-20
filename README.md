@@ -1,4 +1,4 @@
-# MT Daemon 
+# C Server Daemon
 
 MTulio Daemon is an oepn source study case of Client-Server application using TCP sockets on Unix (Linux).
 
